@@ -1,0 +1,126 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlserver"
+  url      = env("DATABASE_URL")
+}
+
+model Roles {
+  id    Int     @id @default(autoincrement())
+  name  String
+  Users Users[]
+}
+
+model Users {
+  id               Int     @id @default(autoincrement())
+  nombre           String  @unique
+  apellido_paterno String
+  apellido_materno String
+  user_name        String  @unique
+  password         String
+  status           Boolean @default(true)
+
+  role_id Int
+  Roles   Roles @relation(fields: [role_id], references: [id])
+
+  created_at DateTime  @default(now())
+  updated_at DateTime  @default(now())
+  deleted_at DateTime?
+
+  Habitaciones Habitaciones[]
+  Reservas     Reservas[]
+}
+
+model Categoria_habitaciones {
+  id          Int     @id @default(autoincrement())
+  nombre      String  @db.VarChar(50)
+  descripcion String? @db.Text
+  capacidad   Int
+  precioBase  Decimal @default(0.00)
+
+  status     Boolean   @default(true)
+  created_at DateTime  @default(now())
+  updated_at DateTime  @default(now())
+  deleted_at DateTime?
+
+  Habitaciones Habitaciones[]
+}
+
+model Estado_habitacion {
+  id           Int            @id @default(autoincrement())
+  nombre       String
+  Habitaciones Habitaciones[]
+}
+
+model Habitaciones {
+  id                Int    @id @default(autoincrement())
+  numero_habitacion String @db.VarChar(10)
+
+  id_categoria           Int
+  Categoria_habitaciones Categoria_habitaciones @relation(fields: [id_categoria], references: [id])
+
+  id_estado_habitacion Int               @default(1)
+  Estado_habitacion    Estado_habitacion @relation(fields: [id_estado_habitacion], references: [id])
+
+  status  Boolean @default(true)
+  id_user Int
+  Users   Users   @relation(fields: [id_user], references: [id])
+
+  descripcion         String?
+  servicios_incluidos String?
+
+  created_at DateTime   @default(now())
+  updated_at DateTime   @default(now())
+  deleted_at DateTime?
+  Reservas   Reservas[]
+}
+
+model Clientes {
+  id               Int     @id @default(autoincrement())
+  nombre           String  @db.VarChar(20)
+  apellido_paterno String  @db.VarChar(20)
+  apellido_materno String  @db.VarChar(20)
+  email            String
+  password         String
+  edad             Int
+  status           Boolean @default(true)
+
+  created_at DateTime   @default(now())
+  updated_at DateTime   @default(now())
+  deleted_at DateTime?
+  Reservas   Reservas[]
+}
+
+model Estado_reservas {
+  id       Int        @id @default(autoincrement())
+  nombre   String
+  Reservas Reservas[]
+}
+
+model Reservas {
+  id Int @id @default(autoincrement())
+
+  id_client     Int
+  Clientes      Clientes     @relation(fields: [id_client], references: [id])
+  id_user       Int
+  Users         Users        @relation(fields: [id_user], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  id_habitacion Int
+  Habitaciones  Habitaciones @relation(fields: [id_habitacion], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  fecha_inicio DateTime
+  fecha_fin    DateTime
+  costo_total  Decimal
+
+  id_estado_reservas Int             @default(1)
+  Estado_reservas    Estado_reservas @relation(fields: [id_estado_reservas], references: [id])
+
+  fecha_reserva   DateTime @default(now())
+  numero_personas Int
+  status          Boolean  @default(true)
+
+  created_at DateTime  @default(now())
+  updated_at DateTime  @default(now())
+  deleted_at DateTime?
+}
