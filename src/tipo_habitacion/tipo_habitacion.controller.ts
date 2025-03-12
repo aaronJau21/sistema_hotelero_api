@@ -1,8 +1,20 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+} from '@nestjs/common';
 import { TipoHabitacionService } from './tipo_habitacion.service';
 import { CreateTipoHabitacionDto } from './dto/create-tipo_habitacion.dto';
 import { UpdateTipoHabitacionDto } from './dto/update-tipo_habitacion.dto';
+import { Public } from 'src/config/decorators/public.decorator';
+import { AuthGuard } from 'src/lib/guards/auth.guard';
 
+@UseGuards(AuthGuard)
 @Controller('tipo-habitacion')
 export class TipoHabitacionController {
   constructor(private readonly tipoHabitacionService: TipoHabitacionService) {}
@@ -23,12 +35,15 @@ export class TipoHabitacionController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateTipoHabitacionDto: UpdateTipoHabitacionDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateTipoHabitacionDto: UpdateTipoHabitacionDto,
+  ) {
     return this.tipoHabitacionService.update(+id, updateTipoHabitacionDto);
   }
 
-  @Delete(':id')
+  @Patch('status/:id')
   remove(@Param('id') id: string) {
-    return this.tipoHabitacionService.remove(+id);
+    return this.tipoHabitacionService.updateStatus(+id);
   }
 }

@@ -34,6 +34,7 @@ export class AuthService {
 
     const { password, id, ...rest } = user;
     const createToken = await this.token.createToken({
+      id: user.id,
       nombre: user.nombre,
       apellido_materno: user.apellido_materno,
       apellido_paterno: user.apellido_paterno,

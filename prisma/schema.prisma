@@ -15,10 +15,10 @@ model Roles {
 
 model Users {
   id               Int     @id @default(autoincrement())
-  nombre           String  @unique
-  apellido_paterno String
-  apellido_materno String
-  user_name        String  @unique
+  nombre           String  @unique @db.VarChar(50)
+  apellido_paterno String  @db.VarChar(50)
+  apellido_materno String  @db.VarChar(50)
+  user_name        String  @unique @db.VarChar(20)
   password         String
   status           Boolean @default(true)
 
@@ -29,8 +29,10 @@ model Users {
   updated_at DateTime  @default(now())
   deleted_at DateTime?
 
-  Habitaciones Habitaciones[]
-  Reservas     Reservas[]
+  Habitaciones       Habitaciones[]
+  Reservas           Reservas[]
+  Habitaciones_fotos Habitaciones_fotos[]
+  Sucursales_hoteles Sucursales_hoteles[]
 }
 
 model Categoria_habitaciones {
@@ -50,31 +52,61 @@ model Categoria_habitaciones {
 
 model Estado_habitacion {
   id           Int            @id @default(autoincrement())
-  nombre       String
+  nombre       String         @db.VarChar(15)
+  Habitaciones Habitaciones[]
+}
+
+model Sucursales_hoteles {
+  id        Int    @id @default(autoincrement())
+  nombre    String
+  direccion String
+
+  id_user Int
+  Users   Users @relation(fields: [id_user], references: [id])
+
+  status       Boolean        @default(true)
   Habitaciones Habitaciones[]
 }
 
 model Habitaciones {
-  id                Int    @id @default(autoincrement())
+  id Int @id @default(autoincrement())
+
   numero_habitacion String @db.VarChar(10)
 
   id_categoria           Int
   Categoria_habitaciones Categoria_habitaciones @relation(fields: [id_categoria], references: [id])
+
+  id_sucursal        Int
+  Sucursales_hoteles Sucursales_hoteles @relation(fields: [id_sucursal], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   id_estado_habitacion Int               @default(1)
   Estado_habitacion    Estado_habitacion @relation(fields: [id_estado_habitacion], references: [id])
 
   status  Boolean @default(true)
   id_user Int
-  Users   Users   @relation(fields: [id_user], references: [id])
+  Users   Users   @relation(fields: [id_user], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
-  descripcion         String?
-  servicios_incluidos String?
+  descripcion         String? @db.Text
+  servicios_incluidos String? @db.Text
 
-  created_at DateTime   @default(now())
-  updated_at DateTime   @default(now())
-  deleted_at DateTime?
-  Reservas   Reservas[]
+  created_at         DateTime             @default(now())
+  updated_at         DateTime             @default(now())
+  deleted_at         DateTime?
+  Reservas           Reservas[]
+  Habitaciones_fotos Habitaciones_fotos[]
+}
+
+model Habitaciones_fotos {
+  id   Int    @id @default(autoincrement())
+  foto String @db.Text
+
+  id_user       Int
+  Users         Users        @relation(fields: [id_user], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  id_habitacion Int
+  Habitaciones  Habitaciones @relation(fields: [id_habitacion], references: [id], onDelete: Cascade)
+
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
 }
 
 model Clientes {
@@ -82,7 +114,7 @@ model Clientes {
   nombre           String  @db.VarChar(20)
   apellido_paterno String  @db.VarChar(20)
   apellido_materno String  @db.VarChar(20)
-  email            String
+  email            String  @db.VarChar(50)
   password         String
   edad             Int
   status           Boolean @default(true)
@@ -95,7 +127,32 @@ model Clientes {
 
 model Estado_reservas {
   id       Int        @id @default(autoincrement())
-  nombre   String
+  nombre   String     @db.VarChar(15)
+  Reservas Reservas[]
+}
+
+model Departamentos {
+  id           Int            @id @default(autoincrement())
+  nombre       String         @unique @db.VarChar(50)
+  status       Boolean        @default(true)
+  Restaurantes Restaurantes[]
+}
+
+model Restaurantes {
+  id          Int    @id @default(autoincrement())
+  nombre      String @unique @db.VarChar(50)
+  direccion   String
+  imagen      String @db.Text
+  descripcion String @db.Text
+
+  id_departamentos Int
+  Departamentos    Departamentos @relation(fields: [id_departamentos], references: [id])
+}
+
+model TypeReserva {
+  id       Int        @id @default(autoincrement())
+  nombre   String     @unique @db.VarChar(20)
+  status   Boolean    @default(true)
   Reservas Reservas[]
 }
 
@@ -115,6 +172,9 @@ model Reservas {
 
   id_estado_reservas Int             @default(1)
   Estado_reservas    Estado_reservas @relation(fields: [id_estado_reservas], references: [id])
+
+  id_type_reserva Int
+  TypeReserva     TypeReserva @relation(fields: [id_type_reserva], references: [id])
 
   fecha_reserva   DateTime @default(now())
   numero_personas Int

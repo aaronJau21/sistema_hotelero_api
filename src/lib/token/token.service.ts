@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
 interface IPayload {
+  id: number;
   nombre: string;
   apellido_paterno: string;
   apellido_materno: string;

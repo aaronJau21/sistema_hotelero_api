@@ -12,10 +12,10 @@ CREATE TABLE [dbo].[Roles] (
 -- CreateTable
 CREATE TABLE [dbo].[Users] (
     [id] INT NOT NULL IDENTITY(1,1),
-    [nombre] NVARCHAR(1000) NOT NULL,
-    [apellido_paterno] NVARCHAR(1000) NOT NULL,
-    [apellido_materno] NVARCHAR(1000) NOT NULL,
-    [user_name] NVARCHAR(1000) NOT NULL,
+    [nombre] VARCHAR(50) NOT NULL,
+    [apellido_paterno] VARCHAR(50) NOT NULL,
+    [apellido_materno] VARCHAR(50) NOT NULL,
+    [user_name] VARCHAR(20) NOT NULL,
     [password] NVARCHAR(1000) NOT NULL,
     [status] BIT NOT NULL CONSTRAINT [Users_status_df] DEFAULT 1,
     [role_id] INT NOT NULL,
@@ -44,8 +44,18 @@ CREATE TABLE [dbo].[Categoria_habitaciones] (
 -- CreateTable
 CREATE TABLE [dbo].[Estado_habitacion] (
     [id] INT NOT NULL IDENTITY(1,1),
-    [nombre] NVARCHAR(1000) NOT NULL,
+    [nombre] VARCHAR(15) NOT NULL,
     CONSTRAINT [Estado_habitacion_pkey] PRIMARY KEY CLUSTERED ([id])
+);
+
+-- CreateTable
+CREATE TABLE [dbo].[Sucursales_hoteles] (
+    [id] INT NOT NULL IDENTITY(1,1),
+    [nombre] NVARCHAR(1000) NOT NULL,
+    [direccion] NVARCHAR(1000) NOT NULL,
+    [id_user] INT NOT NULL,
+    [status] BIT NOT NULL CONSTRAINT [Sucursales_hoteles_status_df] DEFAULT 1,
+    CONSTRAINT [Sucursales_hoteles_pkey] PRIMARY KEY CLUSTERED ([id])
 );
 
 -- CreateTable
@@ -53,15 +63,27 @@ CREATE TABLE [dbo].[Habitaciones] (
     [id] INT NOT NULL IDENTITY(1,1),
     [numero_habitacion] VARCHAR(10) NOT NULL,
     [id_categoria] INT NOT NULL,
+    [id_sucursal] INT NOT NULL,
     [id_estado_habitacion] INT NOT NULL CONSTRAINT [Habitaciones_id_estado_habitacion_df] DEFAULT 1,
     [status] BIT NOT NULL CONSTRAINT [Habitaciones_status_df] DEFAULT 1,
     [id_user] INT NOT NULL,
-    [descripcion] NVARCHAR(1000),
-    [servicios_incluidos] NVARCHAR(1000),
+    [descripcion] TEXT,
+    [servicios_incluidos] TEXT,
     [created_at] DATETIME2 NOT NULL CONSTRAINT [Habitaciones_created_at_df] DEFAULT CURRENT_TIMESTAMP,
     [updated_at] DATETIME2 NOT NULL CONSTRAINT [Habitaciones_updated_at_df] DEFAULT CURRENT_TIMESTAMP,
     [deleted_at] DATETIME2,
     CONSTRAINT [Habitaciones_pkey] PRIMARY KEY CLUSTERED ([id])
+);
+
+-- CreateTable
+CREATE TABLE [dbo].[Habitaciones_fotos] (
+    [id] INT NOT NULL IDENTITY(1,1),
+    [foto] TEXT NOT NULL,
+    [id_user] INT NOT NULL,
+    [id_habitacion] INT NOT NULL,
+    [created_at] DATETIME2 NOT NULL CONSTRAINT [Habitaciones_fotos_created_at_df] DEFAULT CURRENT_TIMESTAMP,
+    [updated_at] DATETIME2 NOT NULL CONSTRAINT [Habitaciones_fotos_updated_at_df] DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT [Habitaciones_fotos_pkey] PRIMARY KEY CLUSTERED ([id])
 );
 
 -- CreateTable
@@ -70,7 +92,7 @@ CREATE TABLE [dbo].[Clientes] (
     [nombre] VARCHAR(20) NOT NULL,
     [apellido_paterno] VARCHAR(20) NOT NULL,
     [apellido_materno] VARCHAR(20) NOT NULL,
-    [email] NVARCHAR(1000) NOT NULL,
+    [email] VARCHAR(50) NOT NULL,
     [password] NVARCHAR(1000) NOT NULL,
     [edad] INT NOT NULL,
     [status] BIT NOT NULL CONSTRAINT [Clientes_status_df] DEFAULT 1,
@@ -83,7 +105,7 @@ CREATE TABLE [dbo].[Clientes] (
 -- CreateTable
 CREATE TABLE [dbo].[Estado_reservas] (
     [id] INT NOT NULL IDENTITY(1,1),
-    [nombre] NVARCHAR(1000) NOT NULL,
+    [nombre] VARCHAR(15) NOT NULL,
     CONSTRAINT [Estado_reservas_pkey] PRIMARY KEY CLUSTERED ([id])
 );
 
@@ -110,13 +132,25 @@ CREATE TABLE [dbo].[Reservas] (
 ALTER TABLE [dbo].[Users] ADD CONSTRAINT [Users_role_id_fkey] FOREIGN KEY ([role_id]) REFERENCES [dbo].[Roles]([id]) ON DELETE NO ACTION ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE [dbo].[Sucursales_hoteles] ADD CONSTRAINT [Sucursales_hoteles_id_user_fkey] FOREIGN KEY ([id_user]) REFERENCES [dbo].[Users]([id]) ON DELETE NO ACTION ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE [dbo].[Habitaciones] ADD CONSTRAINT [Habitaciones_id_categoria_fkey] FOREIGN KEY ([id_categoria]) REFERENCES [dbo].[Categoria_habitaciones]([id]) ON DELETE NO ACTION ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE [dbo].[Habitaciones] ADD CONSTRAINT [Habitaciones_id_sucursal_fkey] FOREIGN KEY ([id_sucursal]) REFERENCES [dbo].[Sucursales_hoteles]([id]) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
 ALTER TABLE [dbo].[Habitaciones] ADD CONSTRAINT [Habitaciones_id_estado_habitacion_fkey] FOREIGN KEY ([id_estado_habitacion]) REFERENCES [dbo].[Estado_habitacion]([id]) ON DELETE NO ACTION ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE [dbo].[Habitaciones] ADD CONSTRAINT [Habitaciones_id_user_fkey] FOREIGN KEY ([id_user]) REFERENCES [dbo].[Users]([id]) ON DELETE NO ACTION ON UPDATE CASCADE;
+ALTER TABLE [dbo].[Habitaciones] ADD CONSTRAINT [Habitaciones_id_user_fkey] FOREIGN KEY ([id_user]) REFERENCES [dbo].[Users]([id]) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+-- AddForeignKey
+ALTER TABLE [dbo].[Habitaciones_fotos] ADD CONSTRAINT [Habitaciones_fotos_id_user_fkey] FOREIGN KEY ([id_user]) REFERENCES [dbo].[Users]([id]) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+-- AddForeignKey
+ALTER TABLE [dbo].[Habitaciones_fotos] ADD CONSTRAINT [Habitaciones_fotos_id_habitacion_fkey] FOREIGN KEY ([id_habitacion]) REFERENCES [dbo].[Habitaciones]([id]) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE [dbo].[Reservas] ADD CONSTRAINT [Reservas_id_client_fkey] FOREIGN KEY ([id_client]) REFERENCES [dbo].[Clientes]([id]) ON DELETE NO ACTION ON UPDATE CASCADE;
