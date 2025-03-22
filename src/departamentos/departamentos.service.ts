@@ -30,8 +30,14 @@ export class DepartamentosService {
     return departamento;
   }
 
-  update(id: number, updateDepartamentoDto: UpdateDepartamentoDto) {
-    return `This action updates a #${id} departamento`;
+  async update(id: number, updateDepartamentoDto: UpdateDepartamentoDto) {
+    await this.findOne(id);
+    const departamento = await this.prisma.departamentos.update({
+      where: { id },
+      data: updateDepartamentoDto,
+    });
+
+    return departamento;
   }
   async updateStatus(id: number) {
     const departamento = await this.findOne(id);
